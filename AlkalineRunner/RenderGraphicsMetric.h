@@ -1,13 +1,13 @@
 //
-//  Alkaline.m
+//  RenderGraphicsMetric.h
 //  Alkaline
 //
 //  Created by Stuart Sharpe on 04/06/2013.
 //  Copyright (c) 2013 sshrpe. All rights reserved.
 //
 
-#import "Alkaline.h"
+#import <Alkaline/Alkaline.h>
 
-@implementation Alkaline
+@interface RenderGraphicsMetric : ALKMetricBase
 
 @end
