@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B72101B717621EAD006A8AFF /* ALKMetric.h in Headers */ = {isa = PBXBuildFile; fileRef = B72101B617621EAC006A8AFF /* ALKMetric.h */; };
+		B72101B717621EAD006A8AFF /* ALKMetric.h in Headers */ = {isa = PBXBuildFile; fileRef = B72101B617621EAC006A8AFF /* ALKMetric.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B7A93705175E0CB40003D49D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A93704175E0CB40003D49D /* Foundation.framework */; };
 		B7A9370A175E0CB40003D49D /* Alkaline.h in Headers */ = {isa = PBXBuildFile; fileRef = B7A93709175E0CB40003D49D /* Alkaline.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B7A93714175E0CB40003D49D /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A93713175E0CB40003D49D /* SenTestingKit.framework */; };

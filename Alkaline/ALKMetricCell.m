@@ -42,15 +42,15 @@
         switch(result.resultStatus) {
             case kALKTestResultStatusFailed:
                 self.contentView.backgroundColor = [UIColor redColor];
-                self.detailTextLabel.text = [NSString stringWithFormat:@"Completed in %fs (Failed!)", result.testTime];
+                self.detailTextLabel.text = [NSString stringWithFormat:@"%fs", result.testTime];
                 break;
             case kALKTestResultStatusWarning:
                 self.contentView.backgroundColor = [UIColor yellowColor];
-                self.detailTextLabel.text = [NSString stringWithFormat:@"Completed in %fs (Warning)", result.testTime];
+                self.detailTextLabel.text = [NSString stringWithFormat:@"%fs", result.testTime];
                 break;
             case kALKTestResultStatusSucceeded:
                 self.contentView.backgroundColor = [UIColor greenColor];
-                self.detailTextLabel.text = [NSString stringWithFormat:@"Completed in %fs (✔)", result.testTime];
+                self.detailTextLabel.text = [NSString stringWithFormat:@"%fs", result.testTime];
                 break;
         }
     } else {

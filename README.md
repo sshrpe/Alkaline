@@ -45,7 +45,7 @@ Metrics are defined as objects which conform to the `ALKMetric` protocol. The cl
 Different situations and metrics require different kinds of tests. Alkaline will (eventually) support three methods of running performance tests:
 
 - **In-app tests** - include the Alkaline library in your app, push an `ALKTestResultsViewController` to the screen, hit the run button and you're done.
-- **Standalone test bed app** - run tests on a device in isolation from the rest of the app. Requires creating a new application target in Xcode including the Alkaline library and the code to be tested. An example of this approach called `AlkalineRunner` is included in the Alkaline project.
+- **Standalone test bed app** - run tests on a device in isolation from the rest of the app. Requires creating a new application target in Xcode including the Alkaline library and the code to be tested. An example of this approach called AlkalineRunner is included in the Alkaline project.
 - **Command line utility** *(coming soon)* - run tests from the command line or integrate with CI server
 
 ## Test Result Output
