@@ -8,7 +8,7 @@
 
 #import "ALKAppDelegate.h"
 
-#import "Alkaline.h"
+#import <Alkaline/Alkaline.h>
 
 @implementation ALKAppDelegate
 

@@ -27,11 +27,15 @@
 {
     // Get the basic information about the metric
     NSInteger repetitions = [self.metric repetitions];
-    NSTimeInterval timeout = [self.metric timeout];
     
+    // A single iteration of the metric now has a timeout of 
+    NSTimeInterval timeout = 60.0;
+    
+    // Create the result object for the test
     _result = [[ALKTestResult alloc] initWithMetric:self.metric];
     
     __block NSTimeInterval testTime = 0;
+    BOOL success = YES;
     
     for (NSInteger i=0; i<repetitions; i++) {
         // Run the setup for the metric before starting the clock
@@ -48,18 +52,25 @@
             testTime += executionTime;
             dispatch_semaphore_signal(testCompletionSemaphore);
         }];
-
+        // Wait on the semaphore
         NSInteger timedOut = dispatch_semaphore_wait(testCompletionSemaphore, dispatch_time(DISPATCH_TIME_NOW, timeout*NSEC_PER_SEC));
-        if (timedOut) {
-            self.result.timedOut = YES;
-            break;
-        } else {
-            self.result.timedOut = NO;
-        }
         [self.metric tearDown];
-    }
-    self.result.testTime = testTime;
 
+        if (timedOut) {
+            success = NO;
+            break;
+        }
+    }
+
+    self.result.testTime = testTime;
+    
+    if (!success) {
+        // If the test timed out, mark as a failure
+        [self.result setResultStatus:kALKTestResultStatusFailed];
+    } else {
+        // Success if the result was under the benchmark time.
+        [self.result setResultStatus:kALKTestResultStatusSucceeded];
+    }
 }
 
 

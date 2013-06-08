@@ -18,12 +18,19 @@
 
 @property (strong) NSMutableDictionary *testResults;
 
+@property (strong) NSMutableDictionary *metricsByUUID;
+
+@property (strong) NSArray *metrics;
+
 @property (assign) BOOL active;
 
 @end
 
 
-@implementation ALKTestRunner
+static NSArray * __allMetrics = nil;
+
+
+@implementation ALKTestRunner 
 
 
 - (id) init
@@ -37,11 +44,19 @@
 {
     self = [super init];
     if (self) {
-        if (metrics) {
-            _metrics = metrics;
-        } else {
-            _metrics = [ALKTestRunner allMetrics];
-            self.testResults = [NSMutableDictionary new];
+        
+        self.metricsByUUID = [NSMutableDictionary dictionary];
+        self.testResults = [NSMutableDictionary new];
+        
+        if (!metrics) {
+            metrics = [ALKTestRunner allMetrics];
+        }
+        _metrics = metrics;
+        
+        for (id<ALKMetric>metric in metrics) {
+            // Assign each metric in the suite a UUID to allow results to be keyed by metric
+            NSString *uuid = [[NSUUID UUID] UUIDString];
+            [self.metricsByUUID setObject:metric forKey:uuid];
         }
     }
     return self;
@@ -52,43 +67,55 @@
 
 + (NSArray *) allMetrics
 {
+    if (__allMetrics) {
+        return __allMetrics;
+    }
+    
     NSMutableArray *metrics = [NSMutableArray array];
-    // Get a list of all the classes
+    
+    // Get a list of all the classes available in the current runtime
     NSInteger numberOfClasses = objc_getClassList(NULL, 0);
     Class *classes = NULL;
-    
     classes = (__unsafe_unretained Class *)malloc(numberOfClasses * sizeof(Class));
     numberOfClasses = objc_getClassList(classes, numberOfClasses);
     
     for (NSInteger idx = 0; idx < numberOfClasses; idx++) {
         Class class = classes[idx];
-        // Find all clases implementing the ALKMetric, ignoring the abstract superclass
+        // Find all clases implementing the ALKMetric, ignoring the abstract superclasses
         if (class_getClassMethod(class, @selector(conformsToProtocol:)) &&
             [class conformsToProtocol:@protocol(ALKMetric)] &&
             class != [ALKMetricBase class]) {
             
             NSLog(@"%@", NSStringFromClass(class));
-            id metric = [[class alloc] init];
             
+            id metric = [[class alloc] init];
             [metrics addObject:metric];
         }
     }
     free(classes);
     
-    return [NSArray arrayWithArray:metrics];
+    __allMetrics = [NSArray arrayWithArray:metrics];
+    return __allMetrics;
 }
 
 
-- (void) beginTestingMetricsUsingBlock:(ALKTestCompletionBlock)completionBlock;
-{
-    __weak ALKTestRunner *blockSelf = self;
+#pragma mark - Running Tests
 
+- (void) beginTestsWithResultHandler:(ALKTestResultHandler)completionBlock;
+{
+    NSAssert(!self.active, @"Call to beginTestsWithResultHandler when test runner is already active");
+    
+    __weak ALKTestRunner *blockSelf = self;    
+    
     self.testQueue = [[NSOperationQueue alloc] init];
     self.testQueue.maxConcurrentOperationCount = 1;
     self.testQueue.suspended = YES;
     
-    for (NSUInteger idx = 0; idx < [self.metrics count]; idx++) {
-        id<ALKMetric> metric = [self.metrics objectAtIndex:idx];
+    [self.testResults removeAllObjects];
+    
+    for (NSString *metricID in [self.metricsByUUID allKeys]) {
+        
+        id<ALKMetric> metric = [self.metricsByUUID objectForKey:metricID];
         
         ALKTestOperation *testOperation = [[ALKTestOperation alloc] initWithMetric:metric];
         
@@ -97,7 +124,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 [blockSelf setResult:(weakOperation.result) forMetric:metric];
                 if (completionBlock) {
-                    completionBlock(metric, idx, weakOperation.result);
+                    completionBlock(metric, [[self.metricsByUUID allKeys] indexOfObject:metricID], weakOperation.result);
                 }
             });
         }];
@@ -112,28 +139,44 @@
     self.active = YES;
 }
 
-
-- (void) setResult:(ALKTestResult *)result forMetric:(id<ALKMetric>)metric;
-{
-    NSString *keyForMetric = NSStringFromClass([metric class]);
-    [self.testResults setObject:result forKey:keyForMetric];
-}
-
-
-- (ALKTestResult *) resultForMetric:(ALKMetricBase *)metric;
-{
-    NSString *keyForMetric = NSStringFromClass([metric class]);
-    return [self.testResults objectForKey:keyForMetric];
-}
-
-
 - (void) cancelTests;
 {
+    NSAssert(self.active, @"Tests cancelled when no tests were running");
+    
+    // Cancel all operations, suspend the queue and mark as not active
     [self.testQueue cancelAllOperations];
     [self.testQueue setSuspended:YES];
     self.testQueue = nil;
     self.active = NO;
 }
 
+
+#pragma mark - Results
+
+
+- (void) setResult:(ALKTestResult *)result forMetric:(id<ALKMetric>)metric;
+{
+    // Metrics are currently keyed by their class name. Only one test of each class is permitted per
+    NSString *keyForMetric = [[self.metricsByUUID allKeysForObject:metric] lastObject];
+    if (keyForMetric) {
+        [self.testResults setObject:result forKey:keyForMetric];
+    }
+}
+
+
+- (ALKTestResult *) resultForMetric:(ALKMetricBase *)metric;
+{
+    NSString *keyForMetric = [[self.metricsByUUID allKeysForObject:metric] lastObject];
+    if (!keyForMetric) {
+        return nil;
+    }
+    return [self.testResults objectForKey:keyForMetric];
+}
+
+
+- (NSArray *) results;
+{
+    return [self.testResults allValues];
+}
 
 @end

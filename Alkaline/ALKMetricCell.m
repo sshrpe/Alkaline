@@ -19,6 +19,9 @@
     self = [super initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier];
     if (self) {
         // Initialization code
+        self.textLabel.backgroundColor = [UIColor clearColor];
+        self.detailTextLabel.backgroundColor = [UIColor clearColor];
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     return self;
 }
@@ -34,15 +37,25 @@
 
 - (void) displayMetric:(ALKMetricBase *)metric withResult:(ALKTestResult *)result;
 {
-    self.textLabel.text = metric.title;
+    self.textLabel.text = metric.name;
     if (result) {
-        if (!result.timedOut) {
-            self.accessoryType = UITableViewCellAccessoryCheckmark;
-        } else {
-            self.accessoryType = UITableViewCellAccessoryNone;
+        switch(result.resultStatus) {
+            case kALKTestResultStatusFailed:
+                self.contentView.backgroundColor = [UIColor redColor];
+                self.detailTextLabel.text = [NSString stringWithFormat:@"Completed in %fs (Failed!)", result.testTime];
+                break;
+            case kALKTestResultStatusWarning:
+                self.contentView.backgroundColor = [UIColor yellowColor];
+                self.detailTextLabel.text = [NSString stringWithFormat:@"Completed in %fs (Warning)", result.testTime];
+                break;
+            case kALKTestResultStatusSucceeded:
+                self.contentView.backgroundColor = [UIColor greenColor];
+                self.detailTextLabel.text = [NSString stringWithFormat:@"Completed in %fs (✔)", result.testTime];
+                break;
         }
     } else {
-        self.accessoryType = UITableViewCellAccessoryNone;
+        self.contentView.backgroundColor = [UIColor whiteColor];
+        self.detailTextLabel.text = @"";
     }
 }
 

@@ -11,40 +11,44 @@
 @implementation ALKMetricBase
 
 
-- (NSString *) title
+- (id)init
 {
-    return NSStringFromClass([self class]);
+    self = [super init];
+    if (self) {
+        self.repetitions = 1;
+        self.name = NSStringFromClass([self class]);
+    }
+    return self;
 }
-
-
-- (NSUInteger) repetitions
-{
-    return 1;
-}
-
-
-- (NSTimeInterval) timeout;
-{
-    return 30.0;
-}
-
 
 - (void) setUp
 {
+    if (self.setUpBlock) {
+        self.setUpBlock();
+    }
 }
 
 
 - (void) runTest:(ALKMetricCompletionHandler)completed;
 {
-    // The superclass will return immediately
+    // The superclass will run the test block
+    if (self.runTestBlock) {
+        self.runTestBlock();
+    }
+
     if (completed) {
-        completed();
+        if (!self.cancelled) {
+            completed();
+        }
     }
 }
 
 
 - (void) tearDown
 {
+    if (self.tearDownBlock) {
+        self.tearDownBlock();
+    }
 }
 
 

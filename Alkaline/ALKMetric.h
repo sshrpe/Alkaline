@@ -15,18 +15,20 @@ typedef void(^ALKMetricCompletionHandler)(void);
 /*!
  @protocol ALKMetric
  @abstract
- A metric defines a single performance criterium for your code. All objects conforming to
- ALKMetric
+ A metric defines a single performance criterium for your code. Metrics are class objects
+ which should do as little as possible whilst calling outside objects to run code which
+ should be performance tested. The quickest way to create a metric is to subclass
+ ALKMetricBase, but the ALKMetric protocol allows any object to be testable.
  */
 @protocol ALKMetric <NSObject>
 
 
 /*!
- @method title
- The title to use for the test. If this method is not implemented, the class name will
- be used as the test title.
+ @method name
+ The name to use for the test. If this method is not implemented, the class name will
+ be used as the test name. This name can be used to describe the test
  */
-- (NSString *) title;
+- (NSString *) name;
 
 
 /*!
@@ -36,15 +38,6 @@ typedef void(^ALKMetricCompletionHandler)(void);
  runTest method will be included in the result. By default, repetitions is 1.
  */
 - (NSUInteger) repetitions;
-
-
-/*!
- @method timeout
- @abstract The timeout value determines the longest time the test should run for before
- cancelling and failing. The default timeout value is 30 seconds. Note, the timeout refers
- to the amount of time a single repetition of the test should take.
- */
-- (NSTimeInterval) timeout;
 
 
 /*!

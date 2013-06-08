@@ -8,13 +8,22 @@
 
 #import <Foundation/Foundation.h>
 
+typedef enum {
+    kALKTestResultStatusFailed = 1000,
+    kALKTestResultStatusWarning,
+    kALKTestResultStatusSucceeded
+} ALKTestResultStatus;
+
 @protocol ALKMetric;
+
 
 @interface ALKTestResult : NSObject
 
 - (id) initWithMetric:(id<ALKMetric>)metric;
 
 @property (readonly) id<ALKMetric> metric;
+
+@property ALKTestResultStatus resultStatus;
 
 @property (assign) BOOL timedOut;
 
