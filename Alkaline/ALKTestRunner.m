@@ -156,7 +156,6 @@ static NSArray * __allMetrics = nil;
 
 - (void) setResult:(ALKTestResult *)result forMetric:(id<ALKMetric>)metric;
 {
-    // Metrics are currently keyed by their class name. Only one test of each class is permitted per
     NSString *keyForMetric = [[self.metricsByUUID allKeysForObject:metric] lastObject];
     if (keyForMetric) {
         [self.testResults setObject:result forKey:keyForMetric];

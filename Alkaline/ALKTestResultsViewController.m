@@ -66,12 +66,36 @@
 
 - (void) runTests:(id)sender
 {
+    // Change the run button to a cancel button
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelTests:)];
+    
     [self.testRunner beginTestsWithResultHandler:^(ALKMetricBase *metric, NSUInteger idx, ALKTestResult *result) {
-        NSLog(@"Completed %@ in %f", metric.name, result.testTime);
+        
         NSIndexPath *cellPath = [NSIndexPath indexPathForRow:idx inSection:0];
         [self.tableView reloadRowsAtIndexPaths:@[cellPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+        
+        if (idx < [self.testRunner.metrics count]-1) {
+            // if there are more tests, display an activity indicator for the next test
+            ALKMetricCell *cell = (ALKMetricCell *)[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:idx+1 inSection:0]];
+            [cell setActive:YES];
+        } else {
+            //if there are no more tests, display the run button again
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Run", @"Button Title")
+                                                                                      style:UIBarButtonItemStyleBordered
+                                                                                     target:self action:@selector(runTests:)];
+        }
+        
     }];
     [self.tableView reloadData];
+    ALKMetricCell *cell = (ALKMetricCell *)[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+    [cell setActive:YES];
+
+}
+
+
+- (void) cancelTests:(id)sender
+{
+    [self.testRunner cancelTests];
 }
 
 

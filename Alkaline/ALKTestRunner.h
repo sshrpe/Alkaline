@@ -47,6 +47,7 @@ typedef void(^ALKTestResultHandler)(id<ALKMetric> metric, NSUInteger idx, ALKTes
  
  Calling beginTestsWithResultHandler: while testing is already in progress will cause
  an exception to be thrown. Once testing has completed, beginning tests again will 
+ remove previous results.
  */
 - (void) beginTestsWithResultHandler:(ALKTestResultHandler)block;
 

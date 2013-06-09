@@ -14,4 +14,6 @@
 
 - (void) displayMetric:(ALKMetricBase *)metric withResult:(ALKTestResult *)result;
 
+@property (nonatomic, assign, getter = isActive) BOOL active;
+
 @end

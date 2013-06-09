@@ -10,6 +10,11 @@
 #import "ALKMetricBase.h"
 #import "ALKTestResult.h"
 
+@interface ALKMetricCell ()
+
+@property (strong) UIActivityIndicatorView *activityIndicator;
+
+@end
 
 @implementation ALKMetricCell
 
@@ -37,6 +42,9 @@
 
 - (void) displayMetric:(ALKMetricBase *)metric withResult:(ALKTestResult *)result;
 {
+    // Displaying a new metric causes the cell to no longer be active.
+    self.active = NO;
+    
     self.textLabel.text = metric.name;
     if (result) {
         switch(result.resultStatus) {
@@ -58,6 +66,26 @@
         self.detailTextLabel.text = @"";
     }
 }
+
+
+- (void) setActive:(BOOL)active
+{
+    if (_active == active) {
+        return;
+    }
+    
+    if (active) {
+        self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        [self.activityIndicator setCenter:CGPointMake(CGRectGetMaxX(self.contentView.frame)-20, CGRectGetMidY(self.contentView.frame))];
+        [self.contentView addSubview:self.activityIndicator];
+        [self.activityIndicator startAnimating];
+    } else {
+        [self.activityIndicator removeFromSuperview];
+        self.activityIndicator = nil;
+        [self setNeedsLayout];
+    }
+}
+
 
 
 @end
