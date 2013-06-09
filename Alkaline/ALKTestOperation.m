@@ -10,7 +10,17 @@
 #import "ALKMetricBase.h"
 #import "ALKTestResult.h"
 
+static dispatch_queue_t RunTestQueue = NULL;
+
 @implementation ALKTestOperation
+
+
++ (void) initialize
+{
+    if (!RunTestQueue) {
+        RunTestQueue = dispatch_queue_create("com.alkaline.test_runner_queue", NULL);
+    }
+}
 
 
 - (id)initWithMetric:(id<ALKMetric>)metric
@@ -28,8 +38,8 @@
     // Get the basic information about the metric
     NSInteger repetitions = [self.metric repetitions];
     
-    // A single iteration of the metric now has a timeout of 
-    NSTimeInterval timeout = 60.0;
+    // A single iteration of the metric has a timeout of 60s
+    NSTimeInterval timeout = 60;
     
     // Create the result object for the test
     _result = [[ALKTestResult alloc] initWithMetric:self.metric];
@@ -46,12 +56,16 @@
         
         // Log the start time of the test. This will be removed from the end time to get test execution time
         NSTimeInterval start = [NSDate timeIntervalSinceReferenceDate];
-        // Run the test. 
-        [self.metric runTest:^{
-            NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - start;
-            testTime += executionTime;
-            dispatch_semaphore_signal(testCompletionSemaphore);
-        }];
+        
+        // Run the test. This is done in a dispatch queue with a semaphore to allow the test to time out
+        dispatch_async(RunTestQueue, ^{
+            [self.metric runTest:^{
+                NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - start;
+                testTime += executionTime;
+                dispatch_semaphore_signal(testCompletionSemaphore);
+            }];
+        });
+        
         // Wait on the semaphore
         NSInteger timedOut = dispatch_semaphore_wait(testCompletionSemaphore, dispatch_time(DISPATCH_TIME_NOW, timeout*NSEC_PER_SEC));
         [self.metric tearDown];
